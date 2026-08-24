@@ -1,0 +1,62 @@
+<div class="bg" aria-hidden="true"></div>
+
+<main class="container">
+  <header class="brand">
+    <a class="brand-mark" data-wml-openURL="https://v3.wails.io" aria-label="Wails website">
+      <img src="/wails.png" class="brand-logo" alt="Wails logo" />
+    </a>
+    <a class="brand-badge" data-wml-openURL="https://angular.dev" aria-label="Angular">
+      <svg viewBox="0 0 250 250" width="24" height="24" aria-hidden="true">
+        <path fill="#DD0031" d="M125 30L31.9 63.2l14.2 123.1L125 230l78.9-43.7 14.2-123.1z" />
+        <path fill="#C3002F" d="M125 30v22.2-.1l23.2-23.2L125 30zM125 230v-58.2l58.2 32.2L125 230z" />
+        <path fill="#FFF" d="M125 52.1L66.8 182.6h21.7l11.7-29.2h49.4l11.7 29.2H183L125 52.1zm17 83.3h-34l17-40.9 17 40.9z" />
+      </svg>
+    </a>
+  </header>
+
+  <h1 class="title"><span class="title-accent">Wails</span> + Angular + Iv</h1>
+  <p class="subtitle">Build beautiful cross-platform apps with Go and Angular.</p>
+
+  <div class="greet">
+    <div class="input-box">
+      <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+      </svg>
+      <input aria-label="input" class="input" type="text" placeholder="Your name" autocomplete="off" [(ngModel)]="name" />
+      <button aria-label="greet-btn" class="btn" (click)="greet()">
+        Greet
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="5" y1="12" x2="19" y2="12" />
+          <polyline points="12 5 19 12 12 19" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</main>
+
+<hr class="footer-divider" />
+<footer class="footer">
+  <span class="footer-version">v3</span>
+  <span class="footer-time">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </svg>
+    <span>{{ currentTime() }}</span>
+  </span>
+  <a class="footer-docs" data-wml-openURL="https://v3.wails.io" aria-label="Wails documentation">
+    Docs
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <line x1="7" y1="17" x2="17" y2="7" />
+      <polyline points="7 7 17 7 17 17" />
+    </svg>
+  </a>
+</footer>
+
+@if (greeting()) {
+  <div class="toast is-visible" role="status" aria-live="polite" (click)="dismiss()">
+    <span class="toast-label">From Go</span>
+    <span aria-label="result" class="toast-msg">{{ greeting() }}</span>
+  </div>
+}
