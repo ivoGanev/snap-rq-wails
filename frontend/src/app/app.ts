@@ -1,36 +1,46 @@
-import { AfterViewInit, Component, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { AfterViewInit, Component, inject, OnInit, signal } from '@angular/core';
 import { WML } from '@wailsio/runtime';
 import { WailsService } from './wails.service';
+import { RequestApiService, type HttpRequest } from './core/services/request.service';
 
 @Component({
   selector: 'app-root',
-  imports: [FormsModule],
+  imports: [],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
-export class App implements AfterViewInit {
+export class App implements OnInit, AfterViewInit {
   private readonly wails = inject(WailsService);
+  private readonly requestApi = inject(RequestApiService);
 
-  readonly name = signal('');
-  readonly greeting = signal<string | null>(null);
   readonly currentTime = this.wails.currentTime;
+  readonly requests = this.requestApi.requests;
+  readonly loading = signal(false);
+  readonly error = signal<string | null>(null);
+  readonly selectedRequest = signal<HttpRequest | null>(null);
+
+  async ngOnInit(): Promise<void> {
+    await this.loadRequests();
+  }
 
   ngAfterViewInit(): void {
-    // Enable Wails Markup Language handlers for data-wml-openURL links.
     WML.Enable();
   }
 
-  async greet(): Promise<void> {
+  async loadRequests(): Promise<void> {
+    this.loading.set(true);
+    this.error.set(null);
     try {
-      const message = await this.wails.greet(this.name());
-      this.greeting.set(message);
+      await this.requestApi.loadAll();
     } catch (err) {
       console.error(err);
+      this.error.set('Failed to load requests.');
+    } finally {
+      this.loading.set(false);
     }
   }
 
-  dismiss(): void {
-    this.greeting.set(null);
+  selectRequest(req: HttpRequest): void {
+    this.selectedRequest.set(req);
   }
 }

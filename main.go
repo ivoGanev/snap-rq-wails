@@ -2,9 +2,11 @@ package main
 
 import (
 	"embed"
-
 	"log"
 	"time"
+
+	"snap-rq/database"
+	"snap-rq/services"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
@@ -28,6 +30,14 @@ func init() {
 // and starts a goroutine that emits a time-based event every second. It subsequently runs the application and
 // logs any error that might occur.
 func main() {
+	// Open the local SQLite database and run migrations.
+	db, err := database.Open()
+	if err != nil {
+		log.Fatalf("failed to open database: %v", err)
+	}
+	defer db.Close()
+
+	requestService := services.NewRequestService(db)
 
 	// Create a new Wails application by providing the necessary options.
 	// Variables 'Name' and 'Description' are for application metadata.
@@ -39,6 +49,7 @@ func main() {
 		Description: "A REST API client",
 		Services: []application.Service{
 			application.NewService(&GreetService{}),
+			application.NewService(requestService),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
@@ -78,7 +89,7 @@ func main() {
 	}()
 
 	// Run the application. This blocks until the application has been exited.
-	err := app.Run()
+	err = app.Run()
 
 	// If an error occurred while running the application, log it and exit.
 	if err != nil {

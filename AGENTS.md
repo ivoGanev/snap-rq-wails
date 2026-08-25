@@ -1,1 +1,2 @@
 - Avoid writing frontend tests
+- Avoid building the app yourself
