@@ -38,6 +38,9 @@ func main() {
 	defer db.Close()
 
 	requestService := services.NewRequestService(db)
+	profileService := services.NewProfileService(db)
+	projectService := services.NewProjectService(db)
+	collectionService := services.NewCollectionService(db)
 
 	// Create a new Wails application by providing the necessary options.
 	// Variables 'Name' and 'Description' are for application metadata.
@@ -50,6 +53,9 @@ func main() {
 		Services: []application.Service{
 			application.NewService(&GreetService{}),
 			application.NewService(requestService),
+			application.NewService(profileService),
+			application.NewService(projectService),
+			application.NewService(collectionService),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),

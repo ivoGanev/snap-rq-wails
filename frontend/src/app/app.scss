@@ -18,7 +18,7 @@
 .app-shell {
   flex: 1 1 auto;
   display: grid;
-  grid-template-columns: 260px 1fr 260px;
+  grid-template-columns: 220px 1fr minmax(420px, 1.35fr);
   gap: 1px;
   overflow: hidden;
 }
@@ -38,44 +38,9 @@
   border-left: 1px solid var(--glass-border);
 }
 
-.brand {
-  display: flex;
-  align-items: center;
-  margin-bottom: var(--s-4);
-}
-
-.brand-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: transform 0.2s ease, filter 0.2s ease;
-  --wails-draggable: no-drag;
-}
-
-.brand-mark:hover {
-  transform: translateY(-2px);
-  filter: drop-shadow(0 0 1em rgba(255, 77, 77, 0.45));
-}
-
-.brand-logo {
-  height: 2.5rem;
-  width: auto;
-  display: block;
-  object-fit: contain;
-}
-
-.panel-placeholder {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--muted);
-  font-size: 0.875rem;
-  border: 1px dashed var(--glass-border);
-  border-radius: var(--radius);
+.sidebar-header {
   padding: var(--s-3);
-  text-align: center;
+  margin-bottom: var(--s-2);
 }
 
 .main-column {
@@ -121,6 +86,42 @@
 
 .state-error {
   color: #ff7a8f;
+}
+
+.collection-list {
+  flex: 1 1 auto;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.collection-item {
+  display: flex;
+  align-items: center;
+  padding: var(--s-2) var(--s-3);
+  margin-bottom: 1px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.15s ease;
+  --wails-draggable: no-drag;
+}
+
+.collection-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.collection-item.is-selected {
+  background: rgba(255, 255, 255, 0.12);
+  font-weight: 600;
+}
+
+.collection-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text);
 }
 
 .request-list {
@@ -287,6 +288,121 @@
 .footer-docs svg {
   width: 17px;
   height: 17px;
+}
+
+.response-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.response-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  background: var(--glass);
+  color: var(--text);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  --wails-draggable: no-drag;
+}
+
+.response-chip:hover {
+  background: var(--glass-strong);
+  border-color: rgba(255, 77, 77, 0.35);
+}
+
+.response-chip.is-active {
+  background: rgba(255, 77, 77, 0.2);
+  border-color: rgba(255, 77, 77, 0.55);
+}
+
+.chip-status {
+  font-weight: 700;
+  color: #86efac;
+}
+
+.chip-status.is-error {
+  color: #fca5a5;
+}
+
+.response-detail {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--s-2) var(--s-3);
+}
+
+.response-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin-bottom: var(--s-2);
+}
+
+.response-status {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #86efac;
+}
+
+.response-status.is-error {
+  color: #fca5a5;
+}
+
+.response-section {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  margin-bottom: var(--s-2);
+}
+
+.response-body-section {
+  flex: 1 1 auto;
+  min-height: 120px;
+}
+
+.section-title {
+  margin: 0 0 0.375rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.response-block {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0;
+  padding: var(--s-2);
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.response-headers {
+  max-height: 160px;
+}
+
+.response-body {
+  min-height: 120px;
 }
 
 @media (max-width: 900px) {

@@ -27,24 +27,9 @@ Your API testing buddy!
 
 ## Seeding mock data
 
-### 50 mixed-size requests in the default app database
+### Scale test script
 ```
 python scripts/mock_requests.py
-```
-
-### 200 requests in a custom file
-```
-python scripts/mock_requests.py --count 200 --db ./test.db
-```
-
-### Small data only
-```
-python scripts/mock_requests.py --count 10 --min-len 5 --max-len 30
-```
-
-### Large data for UI stress testing
-```
-python scripts/mock_requests.py --count 25 --min-len 500 --max-len 4000
 ```
 
 ### Reproducible data + clear existing rows first

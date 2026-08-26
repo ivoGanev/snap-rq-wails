@@ -1,33 +1,46 @@
 <div class="bg" aria-hidden="true"></div>
 
 <div class="app-shell">
-  <aside class="sidebar sidebar-left" aria-label="Left panel">
-    <header class="brand">
-      <a class="brand-mark" data-wml-openURL="https://v3.wails.io" aria-label="Wails website">
-        <img src="/wails.png" class="brand-logo" alt="Wails logo" />
-      </a>
+  <aside class="sidebar sidebar-left" aria-label="Collections">
+    <header class="column-header sidebar-header">
+      <h2 class="column-title">Collections</h2>
     </header>
-    <div class="panel-placeholder">
-      <p>Left panel</p>
-    </div>
+
+    @if (loading()) {
+      <div class="state-message">Loading…</div>
+    }
+
+    @if (!loading() && collections().length === 0) {
+      <div class="state-message">No collections.</div>
+    }
+
+    <ul class="collection-list">
+      @for (collection of collections(); track collection.id) {
+        <li
+          class="collection-item"
+          [class.is-selected]="selectedCollection()?.id === collection.id"
+          (click)="selectCollection(collection)"
+        >
+          <span class="collection-name">{{ collection.name }}</span>
+        </li>
+      }
+    </ul>
   </aside>
 
   <main class="main-column" aria-label="Requests">
     <div class="column-header">
       <h1 class="column-title">Requests</h1>
-      <span class="request-count">{{ requests().length }} saved</span>
+      @if (selectedCollection()) {
+        <span class="request-count">{{ requests().length }} in {{ selectedCollection()!.name }}</span>
+      }
     </div>
 
-    @if (loading()) {
-      <div class="state-message">Loading requests…</div>
+    @if (!selectedCollection()) {
+      <div class="state-message">Select a collection to view requests.</div>
     }
 
-    @if (error()) {
-      <div class="state-message state-error">{{ error() }}</div>
-    }
-
-    @if (!loading() && requests().length === 0) {
-      <div class="state-message">No requests yet.</div>
+    @if (selectedCollection() && requests().length === 0) {
+      <div class="state-message">No requests in this collection.</div>
     }
 
     <ul class="request-list">
@@ -48,10 +61,56 @@
     </ul>
   </main>
 
-  <aside class="sidebar sidebar-right" aria-label="Right panel">
-    <div class="panel-placeholder">
-      <p>Right panel</p>
+  <aside class="sidebar sidebar-right" aria-label="Response panel">
+    <div class="column-header">
+      <h2 class="column-title">Response</h2>
+      @if (selectedRequest()) {
+        <span class="request-count">{{ responses().length }} response(s)</span>
+      }
     </div>
+
+    @if (!selectedRequest()) {
+      <div class="state-message">Select a request to view its response.</div>
+    }
+
+    @if (selectedRequest() && responses().length === 0) {
+      <div class="state-message">No responses for this request.</div>
+    }
+
+    @if (selectedRequest() && responses().length > 0) {
+      <div class="response-picker">
+        @for (resp of responses(); track resp.id) {
+          <button
+            class="response-chip"
+            [class.is-active]="selectedResponse()?.id === resp.id"
+            (click)="selectResponse(resp)"
+          >
+            #{{ resp.id }}
+            <span class="chip-status" [class.is-error]="resp.status_code >= 400">{{ resp.status_code }}</span>
+          </button>
+        }
+      </div>
+    }
+
+    @if (selectedResponse()) {
+      <div class="response-detail">
+        <div class="response-meta">
+          <span class="response-status" [class.is-error]="selectedResponse()!.status_code >= 400">
+            Status: {{ selectedResponse()!.status_code }}
+          </span>
+        </div>
+
+        <div class="response-section">
+          <h3 class="section-title">Headers</h3>
+          <pre class="response-block response-headers">{{ selectedResponse()!.headers || 'No headers' }}</pre>
+        </div>
+
+        <div class="response-section response-body-section">
+          <h3 class="section-title">Body</h3>
+          <pre class="response-block response-body">{{ selectedResponse()!.body || 'No body' }}</pre>
+        </div>
+      </div>
+    }
   </aside>
 </div>
 

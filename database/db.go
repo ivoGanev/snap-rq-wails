@@ -11,7 +11,7 @@ import (
 )
 
 // Open opens the SQLite database stored in the user's application data
-// directory and runs the schema migration.
+// directory, runs migrations, and ensures a default collection exists.
 func Open() (*sql.DB, error) {
 	dbPath := filepath.Join(xdg.DataHome, "snap-rq-wails-v3", "app.db")
 	if err := os.MkdirAll(filepath.Dir(dbPath), 0o755); err != nil {
@@ -23,6 +23,10 @@ func Open() (*sql.DB, error) {
 		return nil, fmt.Errorf("opening database: %w", err)
 	}
 
+	if _, err := db.Exec("PRAGMA foreign_keys = ON"); err != nil {
+		return nil, fmt.Errorf("enabling foreign keys: %w", err)
+	}
+
 	if err := db.Ping(); err != nil {
 		return nil, fmt.Errorf("pinging database: %w", err)
 	}
@@ -31,22 +35,95 @@ func Open() (*sql.DB, error) {
 		return nil, fmt.Errorf("migrating database: %w", err)
 	}
 
+	if err := ensureDefaultCollection(db); err != nil {
+		return nil, fmt.Errorf("ensuring default collection: %w", err)
+	}
+
 	return db, nil
 }
 
 func migrate(db *sql.DB) error {
 	_, err := db.Exec(`
+		CREATE TABLE IF NOT EXISTS profiles (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			name TEXT NOT NULL
+		);
+
+		CREATE TABLE IF NOT EXISTS projects (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			profile_id INTEGER NOT NULL,
+			name TEXT NOT NULL,
+			FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE CASCADE
+		);
+		CREATE INDEX IF NOT EXISTS idx_projects_profile_id ON projects(profile_id);
+
+		CREATE TABLE IF NOT EXISTS collections (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			project_id INTEGER NOT NULL,
+			name TEXT NOT NULL,
+			FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+		);
+		CREATE INDEX IF NOT EXISTS idx_collections_project_id ON collections(project_id);
+
 		CREATE TABLE IF NOT EXISTS http_requests (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			collection_id INTEGER NOT NULL,
 			name TEXT NOT NULL,
 			url TEXT NOT NULL,
 			method TEXT NOT NULL,
 			body TEXT,
 			request_headers TEXT,
-			status_code INTEGER,
-			response_id TEXT
+			status_code INTEGER NOT NULL DEFAULT 0,
+			response_id INTEGER NOT NULL DEFAULT 0,
+			FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE
 		);
+		CREATE INDEX IF NOT EXISTS idx_http_requests_collection_id ON http_requests(collection_id);
 		CREATE INDEX IF NOT EXISTS idx_http_requests_name ON http_requests(name);
+
+		CREATE TABLE IF NOT EXISTS responses (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			request_id INTEGER NOT NULL,
+			headers TEXT,
+			status_code INTEGER NOT NULL DEFAULT 0,
+			body TEXT,
+			FOREIGN KEY (request_id) REFERENCES http_requests(id) ON DELETE CASCADE
+		);
+		CREATE INDEX IF NOT EXISTS idx_responses_request_id ON responses(request_id);
 	`)
 	return err
+}
+
+func ensureDefaultCollection(db *sql.DB) error {
+	var count int
+	if err := db.QueryRow("SELECT COUNT(*) FROM collections").Scan(&count); err != nil {
+		return fmt.Errorf("counting collections: %w", err)
+	}
+	if count > 0 {
+		return nil
+	}
+
+	result, err := db.Exec("INSERT INTO profiles (name) VALUES (?)", "Default Profile")
+	if err != nil {
+		return fmt.Errorf("creating default profile: %w", err)
+	}
+	profileID, err := result.LastInsertId()
+	if err != nil {
+		return fmt.Errorf("getting default profile id: %w", err)
+	}
+
+	result, err = db.Exec("INSERT INTO projects (profile_id, name) VALUES (?, ?)", profileID, "Default Project")
+	if err != nil {
+		return fmt.Errorf("creating default project: %w", err)
+	}
+	projectID, err := result.LastInsertId()
+	if err != nil {
+		return fmt.Errorf("getting default project id: %w", err)
+	}
+
+	_, err = db.Exec("INSERT INTO collections (project_id, name) VALUES (?, ?)", projectID, "my stuff")
+	if err != nil {
+		return fmt.Errorf("creating default collection: %w", err)
+	}
+
+	return nil
 }
