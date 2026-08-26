@@ -150,12 +150,42 @@
 }
 
 .request-item.is-selected {
-  background: rgba(255, 77, 77, 0.12);
-  border-color: rgba(255, 77, 77, 0.55);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.22);
 }
 
 .request-item:active {
   transform: scale(0.995);
+}
+
+.send-button {
+  flex: 0 0 auto;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(4px);
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s ease;
+  margin-right: var(--s-2);
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  --wails-draggable: no-drag;
+}
+
+.send-button:hover {
+  filter: brightness(1.15);
+}
+
+.request-item:hover .send-button,
+.request-item.is-selected .send-button {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
 }
 
 .request-row {

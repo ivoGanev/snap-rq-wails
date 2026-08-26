@@ -53,6 +53,14 @@
           <div class="request-row">
             <span class="request-method" [attr.data-method]="req.method">{{ req.method }}</span>
             <span class="request-name">{{ req.name }}</span>
+            <button
+              class="send-button"
+              type="button"
+              (click)="sendRequest(req, $event)"
+              aria-label="Send request"
+            >
+              Send
+            </button>
             <span class="request-status" [class.is-error]="req.status_code >= 400">{{ req.status_code || '—' }}</span>
           </div>
           <div class="request-url">{{ req.url }}</div>

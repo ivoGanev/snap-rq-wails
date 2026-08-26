@@ -51,4 +51,8 @@ export class RequestApiService {
   async createResponse(resp: Omit<HttpResponse, 'id'>): Promise<HttpResponse> {
     return RequestService.RequestService.CreateResponse(resp as HttpResponse);
   }
+
+  async execute(requestId: number): Promise<HttpResponse> {
+    return RequestService.RequestService.ExecuteRequest(requestId);
+  }
 }

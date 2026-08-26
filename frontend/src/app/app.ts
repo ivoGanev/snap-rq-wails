@@ -90,4 +90,24 @@ export class App implements OnInit, AfterViewInit {
   selectResponse(resp: HttpResponse): void {
     this.selectedResponse.set(resp);
   }
+
+  async sendRequest(req: HttpRequest, event: MouseEvent): Promise<void> {
+    event.stopPropagation();
+    this.loading.set(true);
+    try {
+      const resp = await this.requestApi.execute(req.id);
+      if (this.selectedCollection()) {
+        await this.requestApi.loadForCollection(this.selectedCollection()!.id);
+      }
+      if (this.selectedRequest()?.id === req.id) {
+        await this.loadResponses(req.id);
+        this.selectedResponse.set(resp);
+      }
+    } catch (err) {
+      console.error(err);
+      this.error.set('Failed to send request.');
+    } finally {
+      this.loading.set(false);
+    }
+  }
 }

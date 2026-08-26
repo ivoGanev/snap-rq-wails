@@ -3,6 +3,10 @@ package services
 import (
 	"database/sql"
 	"fmt"
+	"io"
+	"net/http"
+	"strings"
+	"time"
 
 	"snap-rq/models"
 )
@@ -57,6 +61,108 @@ func (s *RequestService) GetRequest(id int64) (models.HttpRequest, error) {
 		return models.HttpRequest{}, fmt.Errorf("getting request: %w", err)
 	}
 	return req, nil
+}
+
+// ExecuteRequest runs the saved HTTP request, stores the response, updates the
+// request's latest status/response id and returns the stored response. Network
+// or client errors are captured as a response with the error message in the body
+// and status code 0.
+func (s *RequestService) ExecuteRequest(id int64) (models.HttpResponse, error) {
+	req, err := s.GetRequest(id)
+	if err != nil {
+		return models.HttpResponse{}, fmt.Errorf("loading request: %w", err)
+	}
+
+	method := strings.ToUpper(strings.TrimSpace(req.Method))
+	if method == "" {
+		method = http.MethodGet
+	}
+
+	var bodyReader io.Reader
+	if req.Body != "" {
+		bodyReader = strings.NewReader(req.Body)
+	}
+
+	httpReq, err := http.NewRequest(method, req.URL, bodyReader)
+	if err != nil {
+		return s.storeErrorResponse(id, fmt.Errorf("building request: %w", err))
+	}
+
+	for _, line := range strings.Split(req.RequestHeaders, "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		key, value, found := strings.Cut(line, ":")
+		if !found {
+			continue
+		}
+		httpReq.Header.Set(strings.TrimSpace(key), strings.TrimSpace(value))
+	}
+
+	client := &http.Client{Timeout: 30 * time.Second}
+	httpResp, err := client.Do(httpReq)
+	if err != nil {
+		return s.storeErrorResponse(id, fmt.Errorf("request failed: %w", err))
+	}
+	defer httpResp.Body.Close()
+
+	respBody, err := io.ReadAll(httpResp.Body)
+	if err != nil {
+		return s.storeErrorResponse(id, fmt.Errorf("reading response body: %w", err))
+	}
+
+	var respHeaders strings.Builder
+	for name, values := range httpResp.Header {
+		for _, value := range values {
+			respHeaders.WriteString(fmt.Sprintf("%s: %s\n", name, value))
+		}
+	}
+
+	resp := models.HttpResponse{
+		RequestID:  id,
+		StatusCode: httpResp.StatusCode,
+		Headers:    strings.TrimSpace(respHeaders.String()),
+		Body:       string(respBody),
+	}
+
+	created, err := s.CreateResponse(resp)
+	if err != nil {
+		return models.HttpResponse{}, fmt.Errorf("saving response: %w", err)
+	}
+
+	_, err = s.db.Exec(
+		`UPDATE http_requests SET status_code = ?, response_id = ? WHERE id = ?`,
+		created.StatusCode, created.ID, id,
+	)
+	if err != nil {
+		return models.HttpResponse{}, fmt.Errorf("updating request: %w", err)
+	}
+
+	return created, nil
+}
+
+func (s *RequestService) storeErrorResponse(requestID int64, execErr error) (models.HttpResponse, error) {
+	resp := models.HttpResponse{
+		RequestID:  requestID,
+		StatusCode: 0,
+		Headers:    "",
+		Body:       execErr.Error(),
+	}
+	created, err := s.CreateResponse(resp)
+	if err != nil {
+		return models.HttpResponse{}, fmt.Errorf("saving error response: %w", err)
+	}
+
+	_, err = s.db.Exec(
+		`UPDATE http_requests SET status_code = ?, response_id = ? WHERE id = ?`,
+		0, created.ID, requestID,
+	)
+	if err != nil {
+		return models.HttpResponse{}, fmt.Errorf("updating request after error: %w", err)
+	}
+
+	return created, nil
 }
 
 // GetAllRequests returns all saved HTTP requests ordered by name.
