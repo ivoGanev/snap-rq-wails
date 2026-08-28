@@ -69,55 +69,148 @@
     </ul>
   </main>
 
-  <aside class="sidebar sidebar-right" aria-label="Response panel">
-    <div class="column-header">
-      <h2 class="column-title">Response</h2>
-      @if (selectedRequest()) {
+  <aside class="sidebar sidebar-right" aria-label="Request and response panel">
+    <div class="column-header tab-header">
+      <div class="tabs">
+        <button
+          class="tab"
+          [class.is-active]="rightPanelMode() === 'response'"
+          (click)="setRightPanelMode('response')"
+          [disabled]="!selectedRequest()"
+        >
+          Response
+        </button>
+        <span class="tab-separator" aria-hidden="true">|</span>
+        <button
+          class="tab"
+          [class.is-active]="rightPanelMode() === 'edit'"
+          (click)="setRightPanelMode('edit')"
+          [disabled]="!selectedRequest()"
+        >
+          Request
+        </button>
+      </div>
+      @if (selectedRequest() && rightPanelMode() === 'response') {
         <span class="request-count">{{ responses().length }} response(s)</span>
       }
     </div>
 
     @if (!selectedRequest()) {
-      <div class="state-message">Select a request to view its response.</div>
+      <div class="state-message">Select a request to view or edit it.</div>
     }
 
-    @if (selectedRequest() && responses().length === 0) {
-      <div class="state-message">No responses for this request.</div>
+    @if (selectedRequest() && rightPanelMode() === 'response') {
+      @if (responses().length === 0) {
+        <div class="state-message">No responses for this request.</div>
+      }
+
+      @if (responses().length > 0) {
+        <div class="response-picker">
+          @for (resp of responses(); track resp.id) {
+            <button
+              class="response-chip"
+              [class.is-active]="selectedResponse()?.id === resp.id"
+              (click)="selectResponse(resp)"
+            >
+              #{{ resp.id }}
+              <span class="chip-status" [class.is-error]="resp.status_code >= 400">{{ resp.status_code }}</span>
+            </button>
+          }
+        </div>
+      }
+
+      @if (selectedResponse()) {
+        <div class="response-detail">
+          <div class="response-meta">
+            <span class="response-status" [class.is-error]="selectedResponse()!.status_code >= 400">
+              Status: {{ selectedResponse()!.status_code }}
+            </span>
+          </div>
+
+          <div class="response-section">
+            <h3 class="section-title">Headers</h3>
+            <pre class="response-block response-headers">{{ selectedResponse()!.headers || 'No headers' }}</pre>
+          </div>
+
+          <div class="response-section response-body-section">
+            <h3 class="section-title">Body</h3>
+            <pre class="response-block response-body">{{ selectedResponse()!.body || 'No body' }}</pre>
+          </div>
+        </div>
+      }
     }
 
-    @if (selectedRequest() && responses().length > 0) {
-      <div class="response-picker">
-        @for (resp of responses(); track resp.id) {
-          <button
-            class="response-chip"
-            [class.is-active]="selectedResponse()?.id === resp.id"
-            (click)="selectResponse(resp)"
-          >
-            #{{ resp.id }}
-            <span class="chip-status" [class.is-error]="resp.status_code >= 400">{{ resp.status_code }}</span>
-          </button>
-        }
-      </div>
-    }
+    @if (selectedRequest() && rightPanelMode() === 'edit' && draftRequest()) {
+      <form class="edit-form" (submit)="saveRequest(); $event.preventDefault()">
+        <div class="edit-fields">
+          <label class="edit-field">
+            <span class="edit-label">Name</span>
+            <input
+              class="edit-input"
+              type="text"
+              [ngModel]="draftRequest()!.name"
+              (ngModelChange)="updateDraft('name', $event)"
+              name="reqName"
+            />
+          </label>
 
-    @if (selectedResponse()) {
-      <div class="response-detail">
-        <div class="response-meta">
-          <span class="response-status" [class.is-error]="selectedResponse()!.status_code >= 400">
-            Status: {{ selectedResponse()!.status_code }}
-          </span>
+          <label class="edit-field">
+            <span class="edit-label">URL</span>
+            <input
+              class="edit-input"
+              type="text"
+              [ngModel]="draftRequest()!.url"
+              (ngModelChange)="updateDraft('url', $event)"
+              name="reqUrl"
+            />
+          </label>
+
+          <label class="edit-field">
+            <span class="edit-label">Method</span>
+            <select
+              class="edit-select"
+              [ngModel]="draftRequest()!.method"
+              (ngModelChange)="updateDraft('method', $event)"
+              name="reqMethod"
+            >
+              <option>GET</option>
+              <option>POST</option>
+              <option>PUT</option>
+              <option>DELETE</option>
+              <option>PATCH</option>
+              <option>HEAD</option>
+              <option>OPTIONS</option>
+            </select>
+          </label>
+
+          <label class="edit-field">
+            <span class="edit-label">Headers</span>
+            <textarea
+              class="edit-textarea"
+              rows="6"
+              [ngModel]="draftRequest()!.request_headers"
+              (ngModelChange)="updateDraft('request_headers', $event)"
+              name="reqHeaders"
+            ></textarea>
+          </label>
+
+          <label class="edit-field">
+            <span class="edit-label">Body</span>
+            <textarea
+              class="edit-textarea edit-body"
+              rows="12"
+              [ngModel]="draftRequest()!.body"
+              (ngModelChange)="updateDraft('body', $event)"
+              name="reqBody"
+            ></textarea>
+          </label>
         </div>
 
-        <div class="response-section">
-          <h3 class="section-title">Headers</h3>
-          <pre class="response-block response-headers">{{ selectedResponse()!.headers || 'No headers' }}</pre>
+        <div class="edit-actions">
+          <button class="edit-save" type="submit">Save</button>
+          <button class="edit-cancel" type="button" (click)="cancelEdit()">Cancel</button>
         </div>
-
-        <div class="response-section response-body-section">
-          <h3 class="section-title">Body</h3>
-          <pre class="response-block response-body">{{ selectedResponse()!.body || 'No body' }}</pre>
-        </div>
-      </div>
+      </form>
     }
   </aside>
 </div>

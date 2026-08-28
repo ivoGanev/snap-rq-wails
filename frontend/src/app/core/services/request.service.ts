@@ -1,8 +1,8 @@
 import { Injectable, signal } from '@angular/core';
 import * as RequestService from '../../../../bindings/snap-rq/services';
-import type { HttpRequest } from '../../../../bindings/snap-rq/models';
+import type { HttpRequest, HttpResponse } from '../../../../bindings/snap-rq/models';
 
-export type { HttpRequest };
+export type { HttpRequest, HttpResponse };
 
 /**
  * Angular wrapper around the Wails-generated RequestService bindings.
@@ -10,6 +10,7 @@ export type { HttpRequest };
 @Injectable({ providedIn: 'root' })
 export class RequestApiService {
   readonly requests = signal<HttpRequest[]>([]);
+  readonly responses = signal<HttpResponse[]>([]);
 
   async create(req: Omit<HttpRequest, 'id'>): Promise<HttpRequest> {
     const created = await RequestService.RequestService.CreateRequest(req as HttpRequest);
@@ -26,6 +27,11 @@ export class RequestApiService {
     this.requests.set(all ?? []);
   }
 
+  async loadForCollection(collectionId: number): Promise<void> {
+    const all = await RequestService.RequestService.GetRequestsForCollection(collectionId);
+    this.requests.set(all ?? []);
+  }
+
   async update(req: HttpRequest): Promise<HttpRequest> {
     const updated = await RequestService.RequestService.UpdateRequest(req);
     await this.loadAll();
@@ -35,5 +41,18 @@ export class RequestApiService {
   async delete(id: number): Promise<void> {
     await RequestService.RequestService.DeleteRequest(id);
     await this.loadAll();
+  }
+
+  async loadResponsesForRequest(requestId: number): Promise<void> {
+    const all = await RequestService.RequestService.GetResponsesForRequest(requestId);
+    this.responses.set(all ?? []);
+  }
+
+  async createResponse(resp: Omit<HttpResponse, 'id'>): Promise<HttpResponse> {
+    return RequestService.RequestService.CreateResponse(resp as HttpResponse);
+  }
+
+  async execute(requestId: number): Promise<HttpResponse> {
+    return RequestService.RequestService.ExecuteRequest(requestId);
   }
 }

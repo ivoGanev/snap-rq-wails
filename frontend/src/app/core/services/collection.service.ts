@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
-import * as CollectionService from '../../../bindings/snap-rq/services';
-import type { Collection } from '../../../bindings/snap-rq/models';
+import * as CollectionService from '../../../../bindings/snap-rq/services';
+import type { Collection } from '../../../../bindings/snap-rq/models';
 
 export type { Collection };
 

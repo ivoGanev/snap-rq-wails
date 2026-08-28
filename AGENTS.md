@@ -1,2 +1,2 @@
 - Avoid writing frontend tests
-- Avoid building the app yourself
+- Frontend should follow the correct folder structure in angular.json

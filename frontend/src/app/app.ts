@@ -1,12 +1,15 @@
 import { AfterViewInit, Component, effect, inject, OnInit, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { WML } from '@wailsio/runtime';
 import { WailsService } from './wails.service';
-import { RequestApiService, type HttpRequest, type HttpResponse } from './services/request.service';
-import { CollectionApiService, type Collection } from './services/collection.service';
+import { RequestApiService, type HttpRequest, type HttpResponse } from './core/services/request.service';
+import { CollectionApiService, type Collection } from './core/services/collection.service';
+
+type RightPanelMode = 'response' | 'edit';
 
 @Component({
   selector: 'app-root',
-  imports: [],
+  imports: [FormsModule],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
@@ -24,15 +27,20 @@ export class App implements OnInit, AfterViewInit {
   readonly selectedCollection = signal<Collection | null>(null);
   readonly selectedRequest = signal<HttpRequest | null>(null);
   readonly selectedResponse = signal<HttpResponse | null>(null);
+  readonly rightPanelMode = signal<RightPanelMode>('response');
+  readonly draftRequest = signal<HttpRequest | null>(null);
 
   constructor() {
     effect(() => {
       const req = this.selectedRequest();
       if (req) {
         this.loadResponses(req.id);
+        this.draftRequest.set({ ...req });
       } else {
         this.requestApi.responses.set([]);
         this.selectedResponse.set(null);
+        this.draftRequest.set(null);
+        this.rightPanelMode.set('response');
       }
     });
   }
@@ -66,6 +74,7 @@ export class App implements OnInit, AfterViewInit {
     this.selectedCollection.set(collection);
     this.selectedRequest.set(null);
     this.selectedResponse.set(null);
+    this.rightPanelMode.set('response');
     try {
       await this.requestApi.loadForCollection(collection.id);
     } catch (err) {
@@ -85,10 +94,51 @@ export class App implements OnInit, AfterViewInit {
 
   selectRequest(req: HttpRequest): void {
     this.selectedRequest.set(req);
+    this.rightPanelMode.set('response');
   }
 
   selectResponse(resp: HttpResponse): void {
     this.selectedResponse.set(resp);
+  }
+
+  setRightPanelMode(mode: RightPanelMode): void {
+    this.rightPanelMode.set(mode);
+    if (mode === 'edit') {
+      const req = this.selectedRequest();
+      this.draftRequest.set(req ? { ...req } : null);
+    }
+  }
+
+  updateDraft<K extends keyof HttpRequest>(field: K, value: HttpRequest[K]): void {
+    const draft = this.draftRequest();
+    if (!draft) return;
+    this.draftRequest.set({ ...draft, [field]: value });
+  }
+
+  async saveRequest(): Promise<void> {
+    const draft = this.draftRequest();
+    const collection = this.selectedCollection();
+    if (!draft || !collection) return;
+
+    this.loading.set(true);
+    this.error.set(null);
+    try {
+      const updated = await this.requestApi.update({ ...draft, collection_id: collection.id });
+      this.selectedRequest.set(updated);
+      await this.requestApi.loadForCollection(collection.id);
+      this.rightPanelMode.set('response');
+    } catch (err) {
+      console.error(err);
+      this.error.set('Failed to save request.');
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  cancelEdit(): void {
+    const req = this.selectedRequest();
+    this.draftRequest.set(req ? { ...req } : null);
+    this.rightPanelMode.set('response');
   }
 
   async sendRequest(req: HttpRequest, event: MouseEvent): Promise<void> {
@@ -102,6 +152,7 @@ export class App implements OnInit, AfterViewInit {
       if (this.selectedRequest()?.id === req.id) {
         await this.loadResponses(req.id);
         this.selectedResponse.set(resp);
+        this.rightPanelMode.set('response');
       }
     } catch (err) {
       console.error(err);

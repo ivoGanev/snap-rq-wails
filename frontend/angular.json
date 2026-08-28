@@ -10,7 +10,33 @@
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
-          "style": "scss"
+          "style": "scss",
+          "skipTests": true,
+          "path": "src"
+        },
+        "@schematics/angular:service": {
+          "path": "src/core/services",
+          "skipTests": true
+        },
+        "@schematics/angular:guard": {
+          "path": "src/core/guards",
+          "skipTests": true
+        },
+        "@schematics/angular:interceptor": {
+          "path": "src/core/interceptors",
+          "skipTests": true
+        },
+        "@schematics/angular:resolver": {
+          "path": "src",
+          "skipTests": true
+        },
+        "@schematics/angular:pipe": {
+          "path": "src/core/pipes",
+          "skipTests": true
+        },
+        "@schematics/angular:directive": {
+          "path": "src/shared/directives",
+          "skipTests": true
         }
       },
       "root": "",
@@ -33,9 +59,7 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles.scss"
-            ]
+            "styles": ["src/styles.scss"]
           },
           "configurations": {
             "production": {
