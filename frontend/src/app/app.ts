@@ -109,36 +109,29 @@ export class App implements OnInit, AfterViewInit {
     }
   }
 
-  updateDraft<K extends keyof HttpRequest>(field: K, value: HttpRequest[K]): void {
-    const draft = this.draftRequest();
-    if (!draft) return;
-    this.draftRequest.set({ ...draft, [field]: value });
-  }
-
-  async saveRequest(): Promise<void> {
+  async updateRequestField<K extends keyof HttpRequest>(field: K, value: HttpRequest[K]): Promise<void> {
     const draft = this.draftRequest();
     const collection = this.selectedCollection();
     if (!draft || !collection) return;
 
-    this.loading.set(true);
-    this.error.set(null);
+    const updated = { ...draft, [field]: value };
+    this.draftRequest.set(updated);
+
     try {
-      const updated = await this.requestApi.update({ ...draft, collection_id: collection.id });
+      await this.requestApi.update({ ...updated, collection_id: collection.id });
       this.selectedRequest.set(updated);
-      await this.requestApi.loadForCollection(collection.id);
-      this.rightPanelMode.set('response');
+
+      const list = this.requests();
+      const index = list.findIndex(r => r.id === updated.id);
+      if (index !== -1) {
+        const newList = [...list];
+        newList[index] = updated;
+        this.requestApi.requests.set(newList);
+      }
     } catch (err) {
       console.error(err);
-      this.error.set('Failed to save request.');
-    } finally {
-      this.loading.set(false);
+      this.error.set('Failed to save request change.');
     }
-  }
-
-  cancelEdit(): void {
-    const req = this.selectedRequest();
-    this.draftRequest.set(req ? { ...req } : null);
-    this.rightPanelMode.set('response');
   }
 
   async sendRequest(req: HttpRequest, event: MouseEvent): Promise<void> {

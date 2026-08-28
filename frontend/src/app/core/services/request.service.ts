@@ -33,9 +33,7 @@ export class RequestApiService {
   }
 
   async update(req: HttpRequest): Promise<HttpRequest> {
-    const updated = await RequestService.RequestService.UpdateRequest(req);
-    await this.loadAll();
-    return updated;
+    return RequestService.RequestService.UpdateRequest(req);
   }
 
   async delete(id: number): Promise<void> {

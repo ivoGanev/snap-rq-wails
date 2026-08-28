@@ -44,18 +44,20 @@ html {
 html,
 body {
   margin: 0;
+  height: 100%;
   color: var(--text);
+  overflow: hidden;
 }
 
 body {
-  min-height: 100vh;
-  min-height: 100dvh;
-  overflow-x: hidden;
+  height: 100vh;
+  height: 100dvh;
   -webkit-user-select: none;
   user-select: none;
   --wails-draggable: drag;
 }
 
 app-root {
-  display: contents;
+  display: block;
+  height: 100%;
 }

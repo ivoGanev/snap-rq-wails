@@ -141,7 +141,7 @@
     }
 
     @if (selectedRequest() && rightPanelMode() === 'edit' && draftRequest()) {
-      <form class="edit-form" (submit)="saveRequest(); $event.preventDefault()">
+      <div class="edit-form">
         <div class="edit-fields">
           <label class="edit-field">
             <span class="edit-label">Name</span>
@@ -149,7 +149,7 @@
               class="edit-input"
               type="text"
               [ngModel]="draftRequest()!.name"
-              (ngModelChange)="updateDraft('name', $event)"
+              (ngModelChange)="updateRequestField('name', $event)"
               name="reqName"
             />
           </label>
@@ -160,7 +160,7 @@
               class="edit-input"
               type="text"
               [ngModel]="draftRequest()!.url"
-              (ngModelChange)="updateDraft('url', $event)"
+              (ngModelChange)="updateRequestField('url', $event)"
               name="reqUrl"
             />
           </label>
@@ -170,7 +170,7 @@
             <select
               class="edit-select"
               [ngModel]="draftRequest()!.method"
-              (ngModelChange)="updateDraft('method', $event)"
+              (ngModelChange)="updateRequestField('method', $event)"
               name="reqMethod"
             >
               <option>GET</option>
@@ -189,7 +189,7 @@
               class="edit-textarea"
               rows="6"
               [ngModel]="draftRequest()!.request_headers"
-              (ngModelChange)="updateDraft('request_headers', $event)"
+              (ngModelChange)="updateRequestField('request_headers', $event)"
               name="reqHeaders"
             ></textarea>
           </label>
@@ -200,17 +200,12 @@
               class="edit-textarea edit-body"
               rows="12"
               [ngModel]="draftRequest()!.body"
-              (ngModelChange)="updateDraft('body', $event)"
+              (ngModelChange)="updateRequestField('body', $event)"
               name="reqBody"
             ></textarea>
           </label>
         </div>
-
-        <div class="edit-actions">
-          <button class="edit-save" type="submit">Save</button>
-          <button class="edit-cancel" type="button" (click)="cancelEdit()">Cancel</button>
-        </div>
-      </form>
+      </div>
     }
   </aside>
 </div>
