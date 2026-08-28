@@ -101,7 +101,7 @@ func (s *EnvironmentService) UpdateEnvironment(env models.Environment) (models.E
 	return env, nil
 }
 
-// DeleteEnvironment removes an environment by ID.
+// DeleteEnvironment removes an environment and all of its variables by ID.
 func (s *EnvironmentService) DeleteEnvironment(id int64) error {
 	_, err := s.db.Exec(`DELETE FROM environments WHERE id = ?`, id)
 	if err != nil {

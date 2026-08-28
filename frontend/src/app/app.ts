@@ -7,6 +7,7 @@ import { CollectionApiService, type Collection } from './core/services/collectio
 import { ProjectApiService, type Project } from './core/services/project.service';
 import { EnvironmentApiService, type Environment } from './core/services/environment.service';
 import { EnvironmentVariableApiService, type EnvironmentVariable } from './core/services/environment-variable.service';
+import * as EnvironmentService from '../../bindings/snap-rq/services';
 
 type RightPanelMode = 'response' | 'edit';
 
@@ -178,7 +179,8 @@ export class App implements OnInit, AfterViewInit {
     event.stopPropagation();
     this.loading.set(true);
     try {
-      const resp = await this.requestApi.execute(req.id);
+      const environmentId = this.selectedEnvironment()?.id ?? 0;
+      const resp = await this.requestApi.execute(req.id, environmentId);
       if (this.selectedCollection()) {
         await this.requestApi.loadForCollection(this.selectedCollection()!.id);
       }
@@ -190,6 +192,24 @@ export class App implements OnInit, AfterViewInit {
     } catch (err) {
       console.error(err);
       this.error.set('Failed to send request.');
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  async deleteEnvironment(): Promise<void> {
+    const env = this.selectedEnvironment();
+    const project = this.selectedProject();
+    if (!env || !project) return;
+
+    this.loading.set(true);
+    try {
+      await EnvironmentService.EnvironmentService.DeleteEnvironment(env.id);
+      await this.loadEnvironments(project.id);
+      this.closeVariablesOverlay();
+    } catch (err) {
+      console.error(err);
+      this.error.set('Failed to delete environment.');
     } finally {
       this.loading.set(false);
     }

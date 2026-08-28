@@ -50,7 +50,7 @@ export class RequestApiService {
     return RequestService.RequestService.CreateResponse(resp as HttpResponse);
   }
 
-  async execute(requestId: number): Promise<HttpResponse> {
-    return RequestService.RequestService.ExecuteRequest(requestId);
+  async execute(requestId: number, environmentId: number): Promise<HttpResponse> {
+    return RequestService.RequestService.ExecuteRequest(requestId, environmentId);
   }
 }

@@ -113,6 +113,15 @@
           Request
         </button>
       </div>
+      @if (selectedRequest()) {
+        <button
+          class="big-send-button"
+          type="button"
+          (click)="sendRequest(selectedRequest()!, $event)"
+        >
+          Send
+        </button>
+      }
       @if (selectedRequest() && rightPanelMode() === 'response') {
         <span class="request-count">{{ responses().length }} response(s)</span>
       }
@@ -238,7 +247,10 @@
     <div class="overlay-panel" (click)="$event.stopPropagation()">
       <div class="overlay-header">
         <h3 class="overlay-title">Edit variables — {{ selectedEnvironment()?.name }}</h3>
-        <button class="overlay-close" type="button" (click)="closeVariablesOverlay()">Close</button>
+        <div class="overlay-actions">
+          <button class="overlay-delete" type="button" (click)="deleteEnvironment()">Delete env</button>
+          <button class="overlay-close" type="button" (click)="closeVariablesOverlay()">Close</button>
+        </div>
       </div>
 
       <div class="overlay-body">
