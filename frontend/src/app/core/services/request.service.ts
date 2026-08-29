@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
-import * as RequestService from '../../../../bindings/snap-rq/services';
-import type { HttpRequest, HttpResponse } from '../../../../bindings/snap-rq/models';
+import * as RequestService from '../../../../bindings/snap-rq/backend/services';
+import type { HttpRequest, HttpResponse } from '../../../../bindings/snap-rq/backend/models';
 
 export type { HttpRequest, HttpResponse };
 

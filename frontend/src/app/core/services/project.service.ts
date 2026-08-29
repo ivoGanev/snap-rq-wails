@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
-import * as ProjectService from '../../../../bindings/snap-rq/services';
-import type { Project } from '../../../../bindings/snap-rq/models';
+import * as ProjectService from '../../../../bindings/snap-rq/backend/services';
+import type { Project } from '../../../../bindings/snap-rq/backend/models';
 
 export type { Project };
 

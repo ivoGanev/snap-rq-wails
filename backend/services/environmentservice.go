@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"snap-rq/models"
+	"snap-rq/backend/models"
 )
 
 // EnvironmentService provides CRUD operations for environments.

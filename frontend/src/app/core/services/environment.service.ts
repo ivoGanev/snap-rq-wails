@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
-import * as EnvironmentService from '../../../../bindings/snap-rq/services';
-import type { Environment } from '../../../../bindings/snap-rq/models';
+import * as EnvironmentService from '../../../../bindings/snap-rq/backend/services';
+import type { Environment } from '../../../../bindings/snap-rq/backend/models';
 
 export type { Environment };
 

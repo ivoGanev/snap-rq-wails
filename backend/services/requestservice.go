@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"snap-rq/models"
+	"snap-rq/backend/models"
 )
 
 var interpolationRegex = regexp.MustCompile(`{{\s*([a-zA-Z0-9_-]+)\s*}}`)
@@ -86,6 +86,8 @@ func (s *RequestService) ExecuteRequest(id int64, environmentID int64) (models.H
 	req.URL = interpolate(req.URL, variables)
 	req.Body = interpolate(req.Body, variables)
 	req.RequestHeaders = interpolate(req.RequestHeaders, variables)
+
+	fmt.Printf("[ExecuteRequest] id=%d envID=%d url=%q body=%q\n", id, environmentID, req.URL, req.Body)
 
 	method := strings.ToUpper(strings.TrimSpace(req.Method))
 	if method == "" {

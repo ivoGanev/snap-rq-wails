@@ -7,7 +7,7 @@ import { CollectionApiService, type Collection } from './core/services/collectio
 import { ProjectApiService, type Project } from './core/services/project.service';
 import { EnvironmentApiService, type Environment } from './core/services/environment.service';
 import { EnvironmentVariableApiService, type EnvironmentVariable } from './core/services/environment-variable.service';
-import * as EnvironmentService from '../../bindings/snap-rq/services';
+import * as EnvironmentService from '../../bindings/snap-rq/backend/services';
 
 type RightPanelMode = 'response' | 'edit';
 
