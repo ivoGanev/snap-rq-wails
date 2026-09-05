@@ -6,16 +6,16 @@
     <select
       class="environment-select"
       [ngModel]="state.selectedEnvironment()?.id"
-      (ngModelChange)="state.onEnvironmentChange(+$event)"
+      (ngModelChange)="onEnvironmentChange(+$event)"
     >
-      @for (env of state.environments(); track env.id) {
+      @for (env of environments(); track env.id) {
         <option [value]="env.id">{{ env.name }}</option>
       }
     </select>
     <button
       class="environment-edit"
       type="button"
-      (click)="state.openVariablesOverlay()"
+      (click)="openVariablesOverlay()"
       [disabled]="!state.selectedEnvironment()"
     >
       Edit
@@ -30,14 +30,14 @@
     <button
       class="project-change-button"
       type="button"
-      (click)="state.openProjectEditor()"
+      (click)="openProjectEditor()"
     >
       Change project
     </button>
   </div>
 </div>
 
-<div class="app-shell" (window:keydown.escape)="state.onEscapePressed()">
+<div class="app-shell" (window:keydown.escape)="onEscapePressed()">
   <app-request-groups [style.width.px]="leftColumnWidth()"></app-request-groups>
 
   <div
@@ -57,38 +57,38 @@
   <app-request-panel [style.width.px]="rightColumnWidth()"></app-request-panel>
 </div>
 
-@if (state.variablesOverlayOpen()) {
-  <div class="overlay-backdrop" (click)="state.closeVariablesOverlay()">
+@if (variablesOverlayOpen()) {
+  <div class="overlay-backdrop" (click)="closeVariablesOverlay()">
     <div class="overlay-panel" (click)="$event.stopPropagation()">
       <div class="overlay-header">
         <h3 class="overlay-title">Edit variables — {{ state.selectedEnvironment()?.name }}</h3>
         <div class="overlay-actions">
-          <button class="overlay-delete" type="button" (click)="state.deleteEnvironment()">Delete env</button>
-          <button class="overlay-close" type="button" (click)="state.closeVariablesOverlay()">Close</button>
+          <button class="overlay-delete" type="button" (click)="deleteEnvironment()">Delete env</button>
+          <button class="overlay-close" type="button" (click)="closeVariablesOverlay()">Close</button>
         </div>
       </div>
 
       <div class="overlay-body">
-        @for (variable of state.variables(); track variable.id) {
+        @for (variable of variables(); track variable.id) {
           <div class="variable-row">
             <input
               class="variable-input"
               type="text"
               placeholder="Key"
               [ngModel]="variable.key"
-              (ngModelChange)="state.updateVariableField(variable, 'key', $event)"
+              (ngModelChange)="updateVariableField(variable, 'key', $event)"
             />
             <input
               class="variable-input"
               type="text"
               placeholder="Value"
               [ngModel]="variable.value"
-              (ngModelChange)="state.updateVariableField(variable, 'value', $event)"
+              (ngModelChange)="updateVariableField(variable, 'value', $event)"
             />
             <button
               class="variable-delete"
               type="button"
-              (click)="state.deleteVariable(variable, $event)"
+              (click)="deleteVariable(variable, $event)"
             >
               Delete
             </button>
@@ -97,170 +97,37 @@
       </div>
 
       <div class="overlay-footer">
-        <button class="variable-add" type="button" (click)="state.addVariable()">Add variable</button>
+        <button class="variable-add" type="button" (click)="addVariable()">Add variable</button>
       </div>
     </div>
   </div>
 }
 
-@if (state.favouritePopupOpen()) {
-  <div class="overlay-backdrop" (click)="state.closeFavouritePopup()">
-    <div class="overlay-panel favourite-popup" (click)="$event.stopPropagation()">
-      <div class="overlay-header">
-        <h3 class="overlay-title">Favourites — {{ state.favouritePopupRequest()?.name }}</h3>
-        <button class="overlay-close" type="button" (click)="state.closeFavouritePopup()">Close</button>
-      </div>
-
-      <div class="overlay-body">
-        @for (collection of state.favouriteCollections(); track collection.id) {
-          <div class="favourite-collection-row">
-            <label class="favourite-checkbox">
-              <input
-                type="checkbox"
-                [checked]="state.favouriteMembership().has(collection.id)"
-                (change)="state.toggleFavouriteMembership(collection)"
-              />
-              <span class="favourite-checkmark"></span>
-              <span class="favourite-collection-name">{{ collection.name }}</span>
-            </label>
-            <button
-              class="favourite-collection-delete"
-              type="button"
-              (click)="state.deleteFavouriteCollection(collection, $event)"
-              aria-label="Delete favourite collection"
-            >
-              Delete
-            </button>
-          </div>
-        }
-      </div>
-
-      <div class="overlay-footer favourite-popup-footer">
-        <input
-          class="variable-input favourite-name-input"
-          type="text"
-          placeholder="New favourite group"
-          [ngModel]="state.newFavouriteName()"
-          (ngModelChange)="state.newFavouriteName.set($event)"
-          (keydown.enter)="state.addFavouriteCollection()"
-        />
-        <button class="variable-add" type="button" (click)="state.addFavouriteCollection()">Add</button>
-      </div>
-    </div>
-  </div>
-}
-
-@if (state.newRequestPopupOpen()) {
-  <div class="overlay-backdrop" (click)="state.closeNewRequestPopup()">
-    <div class="overlay-panel new-request-popup" (click)="$event.stopPropagation()">
-      <div class="overlay-header">
-        <h3 class="overlay-title">Add new request</h3>
-        <button class="overlay-close" type="button" (click)="state.closeNewRequestPopup()">Close</button>
-      </div>
-
-      <div class="overlay-body">
-        <label class="edit-field">
-          <span class="edit-label">Name</span>
-          <input
-            class="edit-input"
-            type="text"
-            [ngModel]="state.newRequestName()"
-            (ngModelChange)="state.newRequestName.set($event)"
-            (keydown.enter)="state.addRequest()"
-          />
-        </label>
-
-        <label class="edit-field">
-          <span class="edit-label">URL</span>
-          <input
-            class="edit-input"
-            type="text"
-            placeholder="https://you-are-the.boss"
-            [ngModel]="state.newRequestUrl()"
-            (ngModelChange)="state.newRequestUrl.set($event)"
-            (keydown.enter)="state.addRequest()"
-          />
-        </label>
-
-        <label class="edit-field">
-          <span class="edit-label">Method</span>
-          <select
-            class="edit-select"
-            [ngModel]="state.newRequestMethod()"
-            (ngModelChange)="state.newRequestMethod.set($event)"
-          >
-            <option>GET</option>
-            <option>POST</option>
-            <option>PUT</option>
-            <option>DELETE</option>
-            <option>PATCH</option>
-            <option>HEAD</option>
-            <option>OPTIONS</option>
-          </select>
-        </label>
-      </div>
-
-      <div class="overlay-footer">
-        <button class="variable-add" type="button" (click)="state.addRequest()">Add request</button>
-      </div>
-    </div>
-  </div>
-}
-
-@if (state.newCollectionPopupOpen()) {
-  <div class="overlay-backdrop" (click)="state.closeNewCollectionPopup()">
-    <div class="overlay-panel new-collection-popup" (click)="$event.stopPropagation()">
-      <div class="overlay-header">
-        <h3 class="overlay-title">Add new collection</h3>
-        <button class="overlay-close" type="button" (click)="state.closeNewCollectionPopup()">Close</button>
-      </div>
-
-      <div class="overlay-body">
-        <label class="edit-field">
-          <span class="edit-label">Name</span>
-          <input
-            class="edit-input"
-            type="text"
-            placeholder="Collection name"
-            [ngModel]="state.newCollectionName()"
-            (ngModelChange)="state.newCollectionName.set($event)"
-            (keydown.enter)="state.addCollection()"
-          />
-        </label>
-      </div>
-
-      <div class="overlay-footer">
-        <button class="variable-add" type="button" (click)="state.addCollection()">Add collection</button>
-      </div>
-    </div>
-  </div>
-}
-
-@if (state.projectEditorOpen()) {
-  <div class="overlay-backdrop" (click)="state.closeProjectEditor()">
+@if (projectEditorOpen()) {
+  <div class="overlay-backdrop" (click)="closeProjectEditor()">
     <div class="overlay-panel project-editor-popup" (click)="$event.stopPropagation()">
       <div class="overlay-header">
         <h3 class="overlay-title">Projects</h3>
-        <button class="overlay-close" type="button" (click)="state.closeProjectEditor()">Close</button>
+        <button class="overlay-close" type="button" (click)="closeProjectEditor()">Close</button>
       </div>
 
       <div class="overlay-body">
-        @if (state.projects().length === 0) {
+        @if (projects().length === 0) {
           <div class="state-message">No projects.</div>
         }
 
         <ul class="project-list">
-          @for (project of state.projects(); track project.id) {
+          @for (project of projects(); track project.id) {
             <li
               class="project-row"
               [class.is-selected]="state.selectedProject()?.id === project.id"
-              (click)="state.onSelectProject(project)"
+              (click)="onSelectProject(project)"
             >
               <span class="project-row-name">{{ project.name }}</span>
               <button
                 class="project-delete-button"
                 type="button"
-                (click)="state.promptDeleteProject(project, $event)"
+                (click)="promptDeleteProject(project, $event)"
                 aria-label="Delete project"
               >
                 Delete
@@ -275,160 +142,32 @@
           class="variable-input project-name-input"
           type="text"
           placeholder="New project name"
-          [ngModel]="state.newProjectName()"
-          (ngModelChange)="state.newProjectName.set($event)"
-          (keydown.enter)="state.addProject()"
+          [ngModel]="newProjectName()"
+          (ngModelChange)="newProjectName.set($event)"
+          (keydown.enter)="addProject()"
         />
-        <button class="variable-add" type="button" (click)="state.addProject()">Add project</button>
+        <button class="variable-add" type="button" (click)="addProject()">Add project</button>
       </div>
     </div>
   </div>
 }
 
-@if (state.projectDeleteConfirmOpen()) {
-  <div class="overlay-backdrop" (click)="state.cancelDeleteProject()">
+@if (projectDeleteConfirmOpen()) {
+  <div class="overlay-backdrop" (click)="cancelDeleteProject()">
     <div class="overlay-panel project-delete-popup" (click)="$event.stopPropagation()">
       <div class="overlay-header">
         <h3 class="overlay-title">Delete project?</h3>
-        <button class="overlay-close" type="button" (click)="state.cancelDeleteProject()">Cancel</button>
+        <button class="overlay-close" type="button" (click)="cancelDeleteProject()">Cancel</button>
       </div>
 
       <div class="overlay-body">
         <p class="delete-confirm-message">
-          This will permanently delete <strong>{{ state.projectPendingDelete()?.name }}</strong> and all of its collections, requests, responses, and favourites.
+          This will permanently delete <strong>{{ projectPendingDelete()?.name }}</strong> and all of its collections, requests, responses, and favourites.
         </p>
       </div>
 
       <div class="overlay-footer">
-        <button class="overlay-delete" type="button" (click)="state.deleteProject()">Delete project</button>
-      </div>
-    </div>
-  </div>
-}
-
-@if (state.requestContextMenuOpen()) {
-  <div
-    class="context-menu-backdrop"
-    (click)="state.closeRequestContextMenu()"
-    (contextmenu)="state.closeRequestContextMenu(); $event.preventDefault()"
-  >
-    <div
-      class="context-menu"
-      [style.left.px]="state.requestContextMenuX()"
-      [style.top.px]="state.requestContextMenuY()"
-      (click)="$event.stopPropagation()"
-    >
-      <button
-        class="context-menu-item context-menu-item--danger"
-        type="button"
-        (click)="state.deleteRequest()"
-      >
-        {{ state.selectedCollection() ? 'Delete request' : 'Remove from favourites' }}
-      </button>
-    </div>
-  </div>
-}
-
-@if (state.collectionContextMenuOpen()) {
-  <div
-    class="context-menu-backdrop"
-    (click)="state.closeCollectionContextMenu()"
-    (contextmenu)="state.closeCollectionContextMenu(); $event.preventDefault()"
-  >
-    <div
-      class="context-menu"
-      [style.left.px]="state.collectionContextMenuX()"
-      [style.top.px]="state.collectionContextMenuY()"
-      (click)="$event.stopPropagation()"
-    >
-      <button
-        class="context-menu-item"
-        type="button"
-        (click)="state.editCollectionAppearance()"
-      >
-        Edit appearance
-      </button>
-      <button
-        class="context-menu-item context-menu-item--danger"
-        type="button"
-        (click)="state.deleteCollection()"
-      >
-        Delete collection
-      </button>
-    </div>
-  </div>
-}
-
-@if (state.collectionAppearancePopupOpen()) {
-  <div class="overlay-backdrop" (click)="state.closeCollectionAppearancePopup()">
-    <div class="overlay-panel appearance-popup" (click)="$event.stopPropagation()">
-      <div class="overlay-header">
-        <h3 class="overlay-title">Appearance — {{ state.collectionAppearanceTarget()?.name }}</h3>
-        <button class="overlay-close" type="button" (click)="state.closeCollectionAppearancePopup()">Close</button>
-      </div>
-
-      <div class="appearance-tabs">
-        <button
-          class="appearance-tab"
-          [class.is-active]="state.collectionAppearanceTab() === 'icon'"
-          type="button"
-          (click)="state.collectionAppearanceTab.set('icon')"
-        >
-          Icon
-        </button>
-        <button
-          class="appearance-tab"
-          [class.is-active]="state.collectionAppearanceTab() === 'color'"
-          type="button"
-          (click)="state.collectionAppearanceTab.set('color')"
-        >
-          Color
-        </button>
-      </div>
-
-      <div class="overlay-body">
-        @if (state.collectionAppearanceTab() === 'icon') {
-          <div class="appearance-grid appearance-grid--icons">
-            @for (icon of state.iconManifest.icons(); track icon.id) {
-              <button
-                class="appearance-swatch appearance-swatch--icon"
-                [class.is-selected]="state.collectionAppearanceTarget()!.appearance.appearance_type === 'icon' && state.collectionAppearanceTarget()!.appearance.appearance_value === icon.id"
-                type="button"
-                (click)="state.selectCollectionAppearanceIcon(icon.id)"
-                [attr.aria-label]="'Select ' + icon.id + ' icon'"
-              >
-                <img [src]="icon.path" alt="" />
-              </button>
-            }
-          </div>
-        } @else {
-          <div class="appearance-grid appearance-grid--colors">
-            @for (color of state.collectionColorPalette; track color) {
-              <button
-                class="appearance-swatch appearance-swatch--color"
-                [class.is-selected]="state.collectionAppearanceTarget()!.appearance.appearance_type === 'color' && state.collectionAppearanceTarget()!.appearance.appearance_value === color"
-                type="button"
-                [style.background-color]="color"
-                (click)="state.selectCollectionAppearanceColor(color)"
-                [attr.aria-label]="'Select color ' + color"
-              ></button>
-            }
-          </div>
-
-          <label class="appearance-color-field">
-            <span class="appearance-color-label">Custom color</span>
-            <input
-              class="appearance-color-input"
-              type="color"
-              [value]="state.collectionAppearanceTarget()!.appearance.appearance_type === 'color' ? state.collectionAppearanceTarget()!.appearance.appearance_value : '#6366f1'"
-              (input)="state.onAppearanceColorInput($event)"
-            />
-          </label>
-        }
-      </div>
-
-      <div class="overlay-footer">
-        <button class="overlay-close" type="button" (click)="state.resetCollectionAppearance()">Reset</button>
+        <button class="overlay-delete" type="button" (click)="deleteProject()">Delete project</button>
       </div>
     </div>
   </div>
@@ -441,7 +180,7 @@
       <circle cx="12" cy="12" r="10" />
       <polyline points="12 6 12 12 16 14" />
     </svg>
-    <span>{{ state.currentTime() }}</span>
+    <span>{{ currentTime() }}</span>
   </span>
   <a class="footer-docs" data-wml-openURL="https://v3.wails.io" aria-label="Wails documentation">
     Docs
