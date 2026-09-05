@@ -1,0 +1,135 @@
+<div class="sidebar-section" [style.flex]="state.collectionsExpanded() ? '1 1 0' : '0 0 auto'">
+  <button
+    class="sidebar-section-toggle"
+    type="button"
+    [class.is-active]="state.collectionsExpanded()"
+    (click)="state.toggleCollectionsExpanded()"
+  >
+    Collections
+  </button>
+  <button
+    class="add-collection-button"
+    type="button"
+    (click)="state.openNewCollectionPopup()"
+    [disabled]="!state.selectedProject()"
+    aria-label="Add collection"
+  >
+    +
+  </button>
+
+  @if (state.collectionsExpanded()) {
+    @if (state.loading()) {
+      <div class="state-message">Loading…</div>
+    }
+
+    @if (!state.loading() && state.collections().length === 0) {
+      <div class="state-message">No collections.</div>
+    }
+
+    <ul class="collection-list">
+      @for (collection of state.collections(); track collection.id) {
+        @let iconPath = collection.appearance.appearance_type === 'icon' ? state.iconManifest.pathFor(collection.appearance.appearance_value) : undefined;
+        @let color = collection.appearance.appearance_type === 'color' ? collection.appearance.appearance_value : null;
+        <li
+          class="collection-item"
+          [class.is-selected]="state.selectedCollection()?.id === collection.id"
+          (click)="state.selectCollection(collection)"
+          (contextmenu)="state.openCollectionContextMenu(collection, $event)"
+        >
+          <button
+            class="collection-indicator"
+            type="button"
+            [style.background-color]="color ?? null"
+            (click)="state.openCollectionAppearancePopup(collection, $event)"
+            [attr.aria-label]="'Edit appearance for ' + collection.name"
+          >
+            @if (iconPath) {
+              <img [src]="iconPath" alt="" />
+            } @else if (!color) {
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z"/>
+              </svg>
+            }
+          </button>
+          <span class="collection-name">{{ collection.name }}</span>
+        </li>
+      }
+    </ul>
+  }
+</div>
+
+<div class="sidebar-section" [style.flex]="state.favouritesExpanded() ? '1 1 0' : '0 0 auto'">
+  <button
+    class="sidebar-section-toggle"
+    type="button"
+    [class.is-active]="state.favouritesExpanded()"
+    (click)="state.toggleFavouritesExpanded()"
+  >
+    Favourites
+  </button>
+
+  @if (state.favouritesExpanded()) {
+    @if (state.favouriteCollections().length === 0) {
+      <div class="state-message">No favourite collections.</div>
+    }
+
+    <ul class="collection-list">
+      @for (collection of state.favouriteCollections(); track collection.id) {
+        <li
+          class="collection-item"
+          [class.is-selected]="state.selectedFavouriteCollection()?.id === collection.id"
+          (click)="state.selectFavouriteCollection(collection)"
+        >
+          <span class="collection-name">{{ collection.name }}</span>
+        </li>
+      }
+    </ul>
+  }
+</div>
+
+<div class="sidebar-section" [style.flex]="state.tagsExpanded() ? '1 1 0' : '0 0 auto'">
+  <button
+    class="sidebar-section-toggle"
+    type="button"
+    [class.is-active]="state.tagsExpanded()"
+    (click)="state.toggleTagsExpanded()"
+  >
+    Tags
+  </button>
+
+  @if (state.tagsExpanded()) {
+    @if (state.allTags().length === 0) {
+      <div class="state-message">No tags yet.</div>
+    }
+
+    @if (state.allTags().length > 0) {
+      <input
+        class="tag-search-input"
+        type="text"
+        placeholder="Filter tags…"
+        [ngModel]="state.tagSearchQuery()"
+        (ngModelChange)="state.tagSearchQuery.set($event)"
+      />
+    }
+
+    <ul class="tag-list">
+      @for (tag of state.filteredTags(); track tag.id) {
+        <li
+          class="tag-item"
+          [class.is-selected]="state.selectedTag() === tag.name"
+          (click)="state.selectTag(tag)"
+        >
+          <span class="tag-chip tag-chip--list">{{ tag.name }}</span>
+          <button
+            class="tag-delete"
+            type="button"
+            (click)="state.deleteTag(tag, $event)"
+            aria-label="Delete tag"
+          >
+            ×
+          </button>
+        </li>
+      }
+    </ul>
+  }
+</div>

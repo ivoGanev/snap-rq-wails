@@ -1,0 +1,82 @@
+<div class="column-header column-header--requests">
+  <button
+    class="add-request-button"
+    type="button"
+    (click)="state.openNewRequestPopup()"
+    [disabled]="!state.selectedCollection()"
+    aria-label="Add request"
+  >
+    + Request
+  </button>
+  <h1 class="column-title">Requests</h1>
+  @if (state.activeGroupName()) {
+    <input
+      class="request-search-input"
+      type="text"
+      placeholder="Search requests…"
+      [ngModel]="state.requestSearchQuery()"
+      (ngModelChange)="state.requestSearchQuery.set($event)"
+    />
+    <span class="request-count">
+      {{ state.filteredActiveRequests().length }}
+      @if (state.requestSearchQuery().trim() && state.filteredActiveRequests().length !== state.activeRequests().length) {
+        of {{ state.activeRequests().length }}
+      }
+      in {{ state.activeGroupName() }}
+    </span>
+  }
+</div>
+
+@if (!state.activeGroupName()) {
+  <div class="state-message">Select a collection, favourite group, or tag to view requests.</div>
+}
+
+@if (state.activeGroupName() && state.activeRequests().length === 0) {
+  <div class="state-message">No requests in this group.</div>
+}
+
+@if (state.activeGroupName() && state.activeRequests().length > 0 && state.filteredActiveRequests().length === 0) {
+  <div class="state-message">No requests match your search.</div>
+}
+
+<ul class="request-list">
+  @for (req of state.filteredActiveRequests(); track req.id) {
+    <li
+      class="request-item"
+      [class.is-selected]="state.selectedRequest()?.id === req.id"
+      (click)="state.selectRequest(req)"
+      (contextmenu)="state.openRequestContextMenu(req, $event)"
+    >
+      <div class="request-row">
+        <span class="request-method" [attr.data-method]="req.method">{{ req.method }}</span>
+        <span class="request-name">{{ req.name }}</span>
+        <button
+          class="favourite-button"
+          type="button"
+          (click)="state.openFavouritePopup(req, $event)"
+          aria-label="Manage favourites"
+        >
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+        </button>
+        <button
+          class="send-button"
+          type="button"
+          (click)="state.sendRequest(req, $event)"
+          aria-label="Send request"
+        >
+          Send
+        </button>
+      </div>
+      <div class="request-url">{{ req.url }}</div>
+      @if (state.requestTags()[req.id]?.length) {
+        <div class="request-tags">
+          @for (tag of state.requestTags()[req.id]; track tag) {
+            <span class="tag-chip tag-chip--inline">{{ tag }}</span>
+          }
+        </div>
+      }
+    </li>
+  }
+</ul>

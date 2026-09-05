@@ -1,0 +1,139 @@
+.sidebar-section {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.sidebar-section + .sidebar-section {
+  margin-top: var(--s-2);
+  border-top: 1px solid var(--glass-border);
+  padding-top: var(--s-2);
+}
+
+.sidebar-section-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 0 0 auto;
+  width: 100%;
+  padding: var(--s-2) var(--s-3);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+  --wails-draggable: no-drag;
+}
+
+.sidebar-section-toggle:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.sidebar-section-toggle.is-active {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-section-toggle::after {
+  content: '▸';
+  font-size: 0.875rem;
+  transition: transform 0.15s ease;
+}
+
+.sidebar-section-toggle.is-active::after {
+  transform: rotate(90deg);
+}
+
+.add-collection-button {
+  padding: 6px 14px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: filter 0.15s ease, opacity 0.15s ease;
+  --wails-draggable: no-drag;
+}
+
+.add-collection-button:hover:not(:disabled) {
+  filter: brightness(1.15);
+}
+
+.add-collection-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.add-collection-button {
+  align-self: flex-start;
+  width: 28px;
+  height: 28px;
+  margin-bottom: var(--s-2);
+  padding: 0;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.collection-list {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
+.collection-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.collection-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.collection-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+}
+
+.collection-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.collection-list {
+  flex: 1 1 auto;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.collection-item {
+  display: flex;
+  align-items: center;
+  padding: var(--s-2) var(--s-3);
+  margin-bottom: 1px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.15s ease;
+  --wails-draggable: no-drag;
+}
+
+.collection-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.collection-item.is-selected {
+  background: rgba(255, 255, 255, 0.12);
+  font-weight: 600;
+}
+
+.collection-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text);
+}
