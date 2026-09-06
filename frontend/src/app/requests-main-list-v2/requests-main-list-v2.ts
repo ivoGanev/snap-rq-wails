@@ -769,6 +769,12 @@ export class RequestsMainListV2 {
     await this.state.sendRequest(req, event);
   }
 
+  openZenMode(req: HttpRequest, event: MouseEvent): void {
+    event.stopPropagation();
+    this.selectCell(req, 'name');
+    this.state.zenModeOpen.set(true);
+  }
+
   onCellDoubleClick(req: HttpRequest, column: ColumnKey): void {
     if (column === 'method') {
       this.openMethodModal(req);

@@ -189,9 +189,62 @@
   outline-offset: -3px;
 }
 
+.spreadsheet-header--action {
+  width: 3%;
+  padding-left: var(--s-2);
+  padding-right: var(--s-2);
+}
+
+.spreadsheet-cell--action {
+  width: 3%;
+  padding-left: var(--s-2);
+  padding-right: var(--s-2);
+  text-align: center;
+  vertical-align: middle;
+}
+
 .spreadsheet-cell--name {
-  width: 18%;
+  width: 15%;
   font-weight: 600;
+}
+
+.zen-mode-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  color: #bfdbfe;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-4px);
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease,
+    visibility 0.15s ease,
+    background 0.15s ease;
+  --wails-draggable: no-drag;
+}
+
+.zen-mode-button svg {
+  width: 14px;
+  height: 14px;
+}
+
+.spreadsheet-row:hover .zen-mode-button,
+.spreadsheet-row.is-selected .zen-mode-button {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+}
+
+.zen-mode-button:hover {
+  background: rgba(255, 255, 255, 0.18);
 }
 
 .spreadsheet-cell--url {
