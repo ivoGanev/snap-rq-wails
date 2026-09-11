@@ -27,13 +27,16 @@
         }
 
         @if (newEnvironmentInputOpen()) {
-          <form class="new-environment-form" (submit)="addEnvironment()">
+          <form class="new-environment-form" (submit)="$event.preventDefault()">
             <input
+              #newEnvInput
               class="new-environment-input"
               type="text"
+              name="newEnvironmentName"
               placeholder="Environment name"
               [ngModel]="newEnvironmentName()"
               (ngModelChange)="newEnvironmentName.set($event)"
+              (keydown.enter)="addEnvironment()"
               (keydown.escape)="closeNewEnvironmentInput()"
               (blur)="addEnvironment()"
               autofocus

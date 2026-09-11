@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, output, signal } from '@angular/core';
+import { Component, computed, effect, ElementRef, inject, output, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { WorkspaceStateService } from '../core/services/workspace-state.service';
 import { EnvironmentApiService, type Environment } from '../core/services/environment.service';
@@ -35,6 +35,7 @@ export class VariablesEditor {
 
   readonly newEnvironmentInputOpen = signal(false);
   readonly newEnvironmentName = signal('');
+  private readonly newEnvironmentInput = viewChild<ElementRef<HTMLInputElement>>('newEnvInput');
 
   readonly deleteConfirmOpen = signal(false);
   readonly environmentPendingDelete = signal<Environment | null>(null);
@@ -90,6 +91,11 @@ export class VariablesEditor {
   openNewEnvironmentInput(): void {
     this.newEnvironmentName.set('');
     this.newEnvironmentInputOpen.set(true);
+    // Focus the input once it is rendered.
+    setTimeout(() => {
+      this.newEnvironmentInput()?.nativeElement.focus();
+      this.newEnvironmentInput()?.nativeElement.select();
+    }, 0);
   }
 
   closeNewEnvironmentInput(): void {
@@ -98,9 +104,14 @@ export class VariablesEditor {
   }
 
   async addEnvironment(): Promise<void> {
-    const project = this.state.selectedProject();
     const name = this.newEnvironmentName().trim();
-    if (!project || !name) return;
+    if (!name) {
+      this.closeNewEnvironmentInput();
+      return;
+    }
+
+    const project = this.state.selectedProject();
+    if (!project) return;
 
     this.state.loading.set(true);
     try {
